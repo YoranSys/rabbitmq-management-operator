@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name:  vhost1
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name:  vhost2
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name:  vhost3
+  
+---
+
+kind: RabbitMQUser
+apiVersion: kopf.dev/v1
+metadata:
+  name: vhost1
+  namespace: vhost1
+spec:
+  username: myuser1
+  password:
+    key: password
+    name: mysecret
+  vhost: vhost1
+
+---  
+kind: RabbitMQUser
+apiVersion: kopf.dev/v1
+metadata:
+  name: vhost2
+  namespace: vhost2
+spec:
+  username: myuser2
+  password:
+    key: password
+    name: mysecret
+  vhost: vhost2
+
+---  
+kind: RabbitMQUser
+apiVersion: kopf.dev/v1
+metadata:
+  name: vhost3
+  namespace: vhost3
+spec:
+  username: myuser3
+  password:
+    key: password
+    name: mysecret
+  vhost: vhost3

@@ -43,6 +43,7 @@ spec:
     key: password
     name: mysecret
   vhost: vhost1
+  tags: vhost1,management
 
 ---
 

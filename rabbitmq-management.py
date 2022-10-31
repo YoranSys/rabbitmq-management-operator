@@ -21,6 +21,11 @@ def create_fn(body, spec, name, namespace, logger, **kwargs):
     username = spec.get('username')
     vhost = spec.get('vhost')
 
+    try:
+        tags = spec.get('tags')
+    except:
+        tags = vhost
+
     # Get secret
     passwordobj = spec.get('password')
     try:
@@ -45,7 +50,57 @@ def create_fn(body, spec, name, namespace, logger, **kwargs):
     try:
         API.user.create(username=username,
                         password=password,
-                        tags=vhost)
+                        tags=tags)
+        logging.info(f"User '{username}' created")
+    except management.ApiConnectionError as why:
+        logging.error('Connection Error: %s' % why)
+        raise kopf.TemporaryError('Connection Error: %s' % why, delay=60)
+    except management.ApiError as why:
+        logging.error('Failed to create user: %s' % why)
+        raise kopf.TemporaryError('Failed to create user: %s' % why, delay=60)
+
+    # Update the Virtual Host permissions for user.
+    try:
+        API.user.set_permission(username=username,
+                                virtual_host=vhost,
+                                configure_regex='.*',
+                                write_regex='.*',
+                                read_regex='.*')
+        logging.info(f"Permission updated  on virtual Host called: {vhost} for {username}")
+    except management.ApiConnectionError as why:
+        logging.error('Connection Error: %s' % why)
+        raise kopf.TemporaryError('Connection Error: %s' % why, delay=60)
+    except management.ApiError as why:
+        logging.error('Failed to update permissions: %s' % why)
+        raise kopf.TemporaryError('Failed to update permissions: %s' % why, delay=60)
+
+@kopf.on.update('rabbitmqusers.kopf.dev')
+def create_fn(body, spec, name, namespace, logger, **kwargs):
+    logging.debug(f"A handler is called with body: {body}")
+
+    username = spec.get('username')
+    vhost = spec.get('vhost')
+    
+    try:
+        tags = spec.get('tags')
+    except:
+        tags = vhost
+
+    # Get secret
+    passwordobj = spec.get('password')
+    try:
+        secret = kubeapi.read_namespaced_secret(passwordobj['name'], namespace).data
+        password = base64.b64decode(secret[passwordobj['key']]).decode('utf-8')
+    except:
+        logging.error('Failed to get secret for crd: %s' % name)
+        raise kopf.TemporaryError('Failed to get secret for crd: %s' % name, delay=60)
+
+    # Create user.
+    try:
+        API.user.delete(username=username)
+        API.user.create(username=username,
+                        password=password,
+                        tags=tags)
         logging.info(f"User '{username}' created")
     except management.ApiConnectionError as why:
         logging.error('Connection Error: %s' % why)

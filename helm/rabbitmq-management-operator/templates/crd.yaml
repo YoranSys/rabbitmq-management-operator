@@ -40,6 +40,9 @@ spec:
                 vhost:
                   description: Authorized vhost
                   type: string
+                tags:
+                  description: Comma-separate list of rabbitmq tags (e.g. monitoring)
+                  type: string                  
             status:
               type: object
               x-kubernetes-preserve-unknown-fields: true

@@ -28,6 +28,7 @@ spec:
     key: password
     name: mysecret
   vhost: vhost1
+  tags: vhost1,management
 
 ---  
 kind: RabbitMQUser
@@ -41,6 +42,7 @@ spec:
     key: password
     name: mysecret
   vhost: vhost2
+  tags: vhost1,management
 
 ---  
 kind: RabbitMQUser
@@ -54,3 +56,4 @@ spec:
     key: password
     name: mysecret
   vhost: vhost3
+  tags: vhost1,management
